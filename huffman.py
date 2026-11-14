@@ -60,12 +60,13 @@ def huffman_encoding(text):
 
     # Edge case: user enters only a single repeated character (e.g. "aaaaa")
     if len(nodes) == 1:
+        huffman_codes = {nodes[0].char: "0"}
         print("--- CODE DICTIONARY ---")
         print(f"'{nodes[0].char}': 0")
         print("\n--- RESULT ---")
         print(f"Original text: {text}")
         print(f"Compressed text: {'0' * len(text)}")
-        return
+        return "0" * len(text), huffman_codes
 
     # 3. Build the tree
     nodes = merge_sort(nodes)
@@ -105,12 +106,35 @@ def huffman_encoding(text):
     print(f"Original size: {original_size} bits")
     print(f"Compressed size: {compressed_size} bits")
     print(f"Space saved: {compression_ratio:.2f}%\n")
+    return compressed_text, huffman_codes
+
+
+def huffman_decoding(compressed_text, huffman_codes):
+    reversed_codes = {code: char for char, code in huffman_codes.items()}
+    decoded_text = []
+    current_code = ""
+
+    for bit in compressed_text:
+        if bit not in ("0", "1"):
+            raise ValueError("Compressed text must contain only 0 and 1.")
+
+        current_code += bit
+        if current_code in reversed_codes:
+            decoded_text.append(reversed_codes[current_code])
+            current_code = ""
+
+    if current_code:
+        raise ValueError("Compressed text ends with an incomplete code.")
+
+    return "".join(decoded_text)
 
 
 if __name__ == "__main__":
     # Dynamic user input
     user_input = input("Enter text to compress: ")
     if user_input:
-        huffman_encoding(user_input)
+        compressed_text, huffman_codes = huffman_encoding(user_input)
+        decoded_text = huffman_decoding(compressed_text, huffman_codes)
+        print(f"Decoded text: {decoded_text}")
     else:
         print("You entered an empty string! Please restart the program and enter valid text.")
